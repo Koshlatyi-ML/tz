@@ -1,0 +1,28 @@
+plugins {
+    id "org.springframework.boot" version "2.1.4.RELEASE" apply false
+    id "io.spring.dependency-management" version "1.0.7.RELEASE" apply false
+    id "io.freefair.lombok" version "2.9.5" apply false
+}
+
+allprojects {
+    group 'ua.com.tz'
+    version '0.1.0'
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.freefair.lombok'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+
+    sourceCompatibility = 1.12
+    targetCompatibility = 1.12
+
+    dependencies {
+        testImplementation 'junit:junit'
+    }
+
+    repositories {
+        mavenCentral()
+    }
+}
