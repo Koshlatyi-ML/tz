@@ -61,14 +61,14 @@ public class AppReadyListener {
 
     private List<Post> populateUserRelations(List<User> users, String postsJson) {
         var userMap = users.stream().collect(Collectors.toUnmodifiableMap(User::getId, Function.identity()));
-        var deserializer = postParser.getDeserializer().apply(userMap);
+        var deserializer = postParser.getDeserializer(userMap);
         var postGson = new GsonBuilder().registerTypeAdapter(Post.class, deserializer).create();
         return asList(postGson.fromJson(postsJson, Post[].class));
     }
 
     private List<Comment> populatePostRelations(List<Post> posts, String commentsJson) {
         var postsMap = posts.stream().collect(Collectors.toUnmodifiableMap(Post::getId, Function.identity()));
-        var deserializer = commentParser.getDeserializer().apply(postsMap);
+        var deserializer = commentParser.getDeserializer(postsMap);
         var commentGson = new GsonBuilder().registerTypeAdapter(Comment.class, deserializer).create();
         return asList(commentGson.fromJson(commentsJson, Comment[].class));
     }

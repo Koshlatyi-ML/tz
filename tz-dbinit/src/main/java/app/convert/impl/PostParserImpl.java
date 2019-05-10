@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,17 +17,17 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 
 @Component
-public class PostDeserializer implements PostParser {
+public class PostParserImpl implements PostParser {
 
     private static final String USER_ID = "userId";
 
     private Gson gson;
 
     @Override
-    public Function<Map<Long, User>, JsonDeserializer<Post>>getDeserializer() {
-        return map -> (JsonDeserializer<Post>) (json, type, context) -> {
+    public JsonDeserializer<Post>getDeserializer(Map<Long, User> userMap) {
+        return (json, type, context) -> {
             var post = gson.fromJson(json.getAsJsonObject(), Post.class);
-            setUpRelations(map).accept(post, json);
+            setUpRelations(userMap).accept(post, json);
             return post;
         };
     }
@@ -46,11 +45,13 @@ public class PostDeserializer implements PostParser {
     private Consumer<User> addPostToUser(Post post) {
         return user -> Optional.ofNullable(user.getPosts()).ifPresentOrElse(
                 p -> p.add(post),
-                () -> {
-                    user.setPosts(new ArrayList<>());
-                    user.getPosts().add(post);
-                }
+                () -> initPosts(user, post)
         );
+    }
+
+    private void initPosts(User user, Post post) {
+        user.setPosts(new ArrayList<>());
+        user.getPosts().add(post);
     }
 
     @Autowired

@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,10 +24,10 @@ public class CommentParserImpl implements CommentParser {
     private Gson gson;
 
     @Override
-    public Function<Map<Long, Post>, JsonDeserializer<Comment>> getDeserializer() {
-        return map -> (JsonDeserializer<Comment>) (json, type, context) -> {
+    public JsonDeserializer<Comment> getDeserializer(Map<Long, Post> postMap) {
+        return (json, type, context) -> {
             var comment = gson.fromJson(json.getAsJsonObject(), Comment.class);
-            setUpRelations(map).accept(comment, json);
+            setUpRelations(postMap).accept(comment, json);
             return comment;
         };
     }
@@ -46,11 +45,13 @@ public class CommentParserImpl implements CommentParser {
     private Consumer<Post> addCommentToPost(Comment comment) {
         return post -> Optional.ofNullable(post.getComments()).ifPresentOrElse(
                 p -> p.add(comment),
-                () -> {
-                    post.setComments(new ArrayList<>());
-                    post.getComments().add(comment);
-                }
+                () -> initComments(post, comment)
         );
+    }
+
+    private void initComments(Post post, Comment comment) {
+        post.setComments(new ArrayList<>());
+        post.getComments().add(comment);
     }
 
     @Autowired
